@@ -12,9 +12,10 @@ let baseCnvWidth, baseCnvHeight; // Initial canvas dimensions for volume scaling
 let canvasInitialized = false; // Flag to ensure canvas is created only once
 let isPaused = false;
 // let wallCollisions = 0; // Replaced by new pressure logic
-let collisionCountSinceLastUpdate = 0;
+let totalMomentumChangeSinceLastUpdate = 0;
 let lastPressureUpdateTime = 0;
 const pressureUpdateInterval = 1000; // milliseconds (1 second)
+const PRESSURE_SCALING_FACTOR = 10; // Adjust to scale pressure to a displayable range
 let displayedPressure = 0;
 
 // Colors for speed indication
@@ -73,22 +74,26 @@ class Particle {
     checkWalls() {
         if (this.pos.x > width - this.radius) {
             this.pos.x = width - this.radius;
+            let momentumChangeX = this.mass * Math.abs(this.vel.x) * (1 + DAMPING_FACTOR);
+            totalMomentumChangeSinceLastUpdate += momentumChangeX;
             this.vel.x *= -1 * DAMPING_FACTOR;
-            collisionCountSinceLastUpdate++;
         } else if (this.pos.x < this.radius) {
             this.pos.x = this.radius;
+            let momentumChangeX = this.mass * Math.abs(this.vel.x) * (1 + DAMPING_FACTOR);
+            totalMomentumChangeSinceLastUpdate += momentumChangeX;
             this.vel.x *= -1 * DAMPING_FACTOR;
-            collisionCountSinceLastUpdate++;
         }
 
         if (this.pos.y > height - this.radius) {
             this.pos.y = height - this.radius;
+            let momentumChangeY = this.mass * Math.abs(this.vel.y) * (1 + DAMPING_FACTOR);
+            totalMomentumChangeSinceLastUpdate += momentumChangeY;
             this.vel.y *= -1 * DAMPING_FACTOR;
-            collisionCountSinceLastUpdate++;
         } else if (this.pos.y < this.radius) {
             this.pos.y = this.radius;
+            let momentumChangeY = this.mass * Math.abs(this.vel.y) * (1 + DAMPING_FACTOR);
+            totalMomentumChangeSinceLastUpdate += momentumChangeY;
             this.vel.y *= -1 * DAMPING_FACTOR;
-            collisionCountSinceLastUpdate++;
         }
     }
 
@@ -327,12 +332,16 @@ function draw() {
 
     // Update pressure display periodically
     if (millis() - lastPressureUpdateTime > pressureUpdateInterval) {
-        let collisionsPerSecond = collisionCountSinceLastUpdate / (pressureUpdateInterval / 1000.0);
-        let collisionsPerMinute = collisionsPerSecond * 60;
-        displayedPressure = roundPressureForDisplay(collisionsPerMinute);
+        let timeIntervalSeconds = pressureUpdateInterval / 1000.0;
+        let averageForce = totalMomentumChangeSinceLastUpdate / timeIntervalSeconds;
+        let perimeter = 2 * (width + height);
+        if (perimeter === 0) perimeter = 1; // Avoid division by zero if canvas not ready
+        let rawPressure = averageForce / perimeter;
+        
+        displayedPressure = roundPressureForDisplay(rawPressure * PRESSURE_SCALING_FACTOR);
         pressureDisplaySpan.html(displayedPressure);
 
-        collisionCountSinceLastUpdate = 0;
+        totalMomentumChangeSinceLastUpdate = 0;
         lastPressureUpdateTime = millis();
     }
 }
