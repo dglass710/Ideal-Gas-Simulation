@@ -1,0 +1,106 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: #1a1a2e;
+    color: #e0e0e0;
+    overflow-x: hidden;
+}
+
+.container {
+    background-color: #2a2a3e;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    width: 90%;
+    max-width: 800px;
+}
+
+h1 {
+    color: #f0a500;
+    margin-bottom: 20px;
+    font-size: 2.5em;
+}
+
+#canvas-container {
+    margin: 20px auto;
+    border: 2px solid #f0a500;
+    border-radius: 8px;
+    overflow: hidden;
+    width: 100%; /* Fit to container */
+    max-width: 700px; /* Max width of canvas */
+    aspect-ratio: 16 / 9; /* Maintain aspect ratio */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.controls {
+    margin-top: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.slider-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    background-color: #1e1e2f;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.slider-group label {
+    font-size: 1.1em;
+    margin-bottom: 10px;
+    color: #c0c0c0;
+}
+
+.slider-group span {
+    color: #f0a500;
+    font-weight: bold;
+}
+
+.slider {
+    width: 100%;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 10px;
+    background: #4a4a5e;
+    outline: none;
+    border-radius: 5px;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #f0a500;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid #1a1a2e;
+}
+
+.slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: #f0a500;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid #1a1a2e;
+}
+
+/* Ensure p5.js canvas fits its container */
+canvas {
+    display: block; /* Removes extra space below canvas */
+    max-width: 100%;
+    max-height: 100%;
+}
