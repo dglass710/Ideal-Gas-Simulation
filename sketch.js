@@ -1,11 +1,11 @@
 let particles = [];
-let numParticlesSlider, temperatureSlider, volumeSlider, minRadiusSlider, maxRadiusSlider;
-let numParticlesValSpan, temperatureValSpan, volumeValSpan, pressureDisplaySpan, minRadiusValSpan, maxRadiusValSpan;
+let numParticlesSlider, temperatureSlider, volumeSlider, minRadiusSlider, maxRadiusSlider, dampingSlider;
+let numParticlesValSpan, temperatureValSpan, volumeValSpan, pressureDisplaySpan, minRadiusValSpan, maxRadiusValSpan, dampingFactorValSpan;
 let pausePlayButton;
 
 let PARTICLE_RADIUS_MIN = 4;
 let PARTICLE_RADIUS_MAX = 7;
-const DAMPING_FACTOR = 0.99; // Slight energy loss for stability, realism
+let DAMPING_FACTOR = 0.99; // Slight energy loss for stability, realism
 const K_TEMP_SCALAR = 0.05; // Scales Kelvin to a reasonable base speed
 
 let baseCnvWidth, baseCnvHeight; // Initial canvas dimensions for volume scaling
@@ -28,6 +28,7 @@ const DEFAULT_TEMPERATURE_K = 298;
 const DEFAULT_VOLUME_PERCENT = 100;
 const DEFAULT_MIN_RADIUS = 4;
 const DEFAULT_MAX_RADIUS = 7;
+const DEFAULT_DAMPING_FACTOR = 0.99;
 
 class Particle {
     constructor(x, y, kelvinTemp) {
@@ -188,6 +189,11 @@ function setup() {
     maxRadiusSlider.value(PARTICLE_RADIUS_MAX);
     maxRadiusValSpan.html(PARTICLE_RADIUS_MAX);
 
+    dampingSlider = select('#dampingFactor');
+    dampingFactorValSpan = select('#dampingFactorVal');
+    dampingSlider.value(DAMPING_FACTOR);
+    dampingFactorValSpan.html(DAMPING_FACTOR.toFixed(2));
+
     // Event Listenerssure span
     pausePlayButton = select('#pausePlayButton'); // Get pause/play button
 
@@ -199,6 +205,7 @@ function setup() {
     volumeSlider.input(updateVolume);
     minRadiusSlider.input(updateMinRadius);
     maxRadiusSlider.input(updateMaxRadius);
+    dampingSlider.input(updateDampingFactor);
 
     let resetButton = select('#resetButton');
     resetButton.mousePressed(resetSimulation);
@@ -269,6 +276,11 @@ function updateMaxRadius() {
         minRadiusValSpan.html(PARTICLE_RADIUS_MIN);
     }
     if (!isPaused) initializeParticles(); // Re-initialize if not paused
+}
+
+function updateDampingFactor() {
+    DAMPING_FACTOR = parseFloat(dampingSlider.value());
+    dampingFactorValSpan.html(DAMPING_FACTOR.toFixed(2));
 }
 
 function updateTemperatureDisplay() {
@@ -406,6 +418,10 @@ function resetSimulation() {
     PARTICLE_RADIUS_MAX = DEFAULT_MAX_RADIUS;
     maxRadiusSlider.value(DEFAULT_MAX_RADIUS);
     maxRadiusValSpan.html(DEFAULT_MAX_RADIUS);
+
+    DAMPING_FACTOR = DEFAULT_DAMPING_FACTOR;
+    dampingSlider.value(DEFAULT_DAMPING_FACTOR);
+    dampingFactorValSpan.html(DEFAULT_DAMPING_FACTOR.toFixed(2));
 
     if (isPaused) { // If paused, unpause and restart loop for reset to take full effect
         togglePause();
