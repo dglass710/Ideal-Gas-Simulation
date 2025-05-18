@@ -1,15 +1,20 @@
 let particles = [];
-let numParticlesSlider, temperatureSlider;
-let numParticlesValSpan, temperatureValSpan;
+let numParticlesSlider, temperatureSlider, volumeSlider;
+let numParticlesValSpan, temperatureValSpan, volumeValSpan;
 
 const PARTICLE_RADIUS = 5;
 const DAMPING_FACTOR = 0.99; // Slight energy loss for stability, realism
+const K_TEMP_SCALAR = 0.05; // Scales Kelvin to a reasonable base speed
+
+let baseCnvWidth, baseCnvHeight; // Initial canvas dimensions for volume scaling
 
 class Particle {
     constructor(x, y, baseSpeed) {
         this.pos = createVector(x, y);
         this.vel = p5.Vector.random2D();
-        this.vel.mult(random(0.5 * baseSpeed, 1.5 * baseSpeed));
+        let actualSpeed = sqrt(baseSpeed * K_TEMP_SCALAR); // Speed proportional to sqrt(T)
+        if (actualSpeed === 0) actualSpeed = 0.01; // avoid zero velocity if T=0
+        this.vel.mult(random(0.7 * actualSpeed, 1.3 * actualSpeed));
         this.radius = PARTICLE_RADIUS;
         this.mass = this.radius * this.radius; // Mass proportional to area
         this.color = color(random(150, 255), random(100, 200), random(50, 150), 220);
@@ -21,13 +26,16 @@ class Particle {
 
         // Adjust speed based on temperature, but maintain direction
         let currentSpeed = this.vel.mag();
+        let actualSpeed = sqrt(baseSpeed * K_TEMP_SCALAR);
+        if (actualSpeed === 0) actualSpeed = 0.01;
+
         if (currentSpeed === 0) { // Avoid division by zero if particle is stationary
             this.vel = p5.Vector.random2D();
-            this.vel.mult(random(0.5 * baseSpeed, 1.5 * baseSpeed));
+            this.vel.mult(random(0.7 * actualSpeed, 1.3 * actualSpeed));
         } else {
-            // Gently nudge speed towards new baseSpeed distribution
-            let targetSpeed = random(0.5 * baseSpeed, 1.5 * baseSpeed);
-            this.vel.setMag(currentSpeed * 0.95 + targetSpeed * 0.05);
+            // Gently nudge speed towards new temperature's speed distribution
+            let targetSpeedDistribution = random(0.7 * actualSpeed, 1.3 * actualSpeed);
+            this.vel.setMag(currentSpeed * 0.95 + targetSpeedDistribution * 0.05);
         }
     }
 
@@ -108,47 +116,50 @@ class Particle {
 
 function setup() {
     let canvasContainer = select('#canvas-container');
-    let cnvWidth = canvasContainer.width;
-    let cnvHeight = Math.floor(cnvWidth * (9 / 16)); // Maintain 16:9 aspect ratio
-    canvasContainer.style('height', cnvHeight + 'px'); // Set container height for canvas
-
-    let cnv = createCanvas(cnvWidth, cnvHeight);
-    cnv.parent('canvas-container');
+    baseCnvWidth = canvasContainer.width; // Store initial width from CSS/HTML
+    baseCnvHeight = Math.floor(baseCnvWidth * (9 / 16)); // Maintain 16:9 aspect ratio
+    // Canvas itself will be created in updateVolume
 
     numParticlesSlider = select('#numParticles');
     temperatureSlider = select('#temperature');
+    volumeSlider = select('#volume');
     numParticlesValSpan = select('#numParticlesVal');
     temperatureValSpan = select('#temperatureVal');
+    volumeValSpan = select('#volumeVal');
 
     numParticlesSlider.input(updateParticleCount);
     temperatureSlider.input(updateTemperatureDisplay);
+    volumeSlider.input(updateVolume);
 
+    // Initial setup for canvas size based on volume slider
+    updateVolume(); 
     initializeParticles();
 }
 
 function initializeParticles() {
     particles = [];
     let num = numParticlesSlider.value();
-    let baseSpeed = temperatureSlider.value();
+    let kelvinTemp = temperatureSlider.value();
     numParticlesValSpan.html(num);
 
     for (let i = 0; i < num; i++) {
+        // Ensure particles are initialized within the current canvas dimensions
         particles.push(new Particle(random(PARTICLE_RADIUS, width - PARTICLE_RADIUS), 
                                     random(PARTICLE_RADIUS, height - PARTICLE_RADIUS),
-                                    baseSpeed));
+                                    kelvinTemp)); // Pass Kelvin temp
     }
 }
 
 function updateParticleCount() {
     let num = numParticlesSlider.value();
     numParticlesValSpan.html(num);
-    let baseSpeed = temperatureSlider.value();
+    let kelvinTemp = temperatureSlider.value(); // Get Kelvin temp
 
     if (num > particles.length) {
         for (let i = particles.length; i < num; i++) {
             particles.push(new Particle(random(PARTICLE_RADIUS, width - PARTICLE_RADIUS), 
                                         random(PARTICLE_RADIUS, height - PARTICLE_RADIUS),
-                                        baseSpeed));
+                                        kelvinTemp)); // Pass Kelvin temp
         }
     } else if (num < particles.length) {
         particles.splice(num); // Remove excess particles
@@ -157,14 +168,15 @@ function updateParticleCount() {
 
 function updateTemperatureDisplay() {
     temperatureValSpan.html(temperatureSlider.value());
+    // No need to directly update particle speeds here, Particle.update handles it
 }
 
 function draw() {
     background(30, 30, 47); // Dark blue-grey background
-    let baseSpeed = temperatureSlider.value();
+    let kelvinTemp = temperatureSlider.value(); // Get Kelvin temp
 
     for (let i = 0; i < particles.length; i++) {
-        particles[i].update(baseSpeed);
+        particles[i].update(kelvinTemp); // Pass Kelvin temp
         particles[i].checkWalls(width, height);
         for (let j = i + 1; j < particles.length; j++) {
             particles[i].checkCollision(particles[j]);
@@ -176,13 +188,47 @@ function draw() {
     }
 }
 
+// Update volume and resize canvas
+function updateVolume() {
+    let volumePercent = volumeSlider.value();
+    volumeValSpan.html(volumePercent);
+
+    let scaleFactor = volumePercent / 100;
+    let newCnvWidth = baseCnvWidth * scaleFactor;
+    let newCnvHeight = baseCnvHeight * scaleFactor;
+
+    let canvasContainer = select('#canvas-container');
+    canvasContainer.style('width', newCnvWidth + 'px'); // Adjust container if needed or rely on CSS
+    canvasContainer.style('height', newCnvHeight + 'px');
+
+    // Scale particle positions before resizing canvas
+    // This prevents particles from being clumped or lost if canvas shrinks
+    for (let p of particles) {
+        p.pos.x = p.pos.x * (newCnvWidth / width);
+        p.pos.y = p.pos.y * (newCnvHeight / height);
+    }
+
+    if (typeof p5Instance !== 'undefined' && p5Instance.canvas) { // Check if canvas exists
+        resizeCanvas(newCnvWidth, newCnvHeight);
+    } else {
+        let cnv = createCanvas(newCnvWidth, newCnvHeight);
+        cnv.parent('canvas-container');
+    }
+    // Ensure particles stay within new bounds immediately
+    for (let p of particles) {
+        p.pos.x = constrain(p.pos.x, p.radius, width - p.radius);
+        p.pos.y = constrain(p.pos.y, p.radius, height - p.radius);
+    }
+}
+
 // Resize canvas when window is resized
 function windowResized() {
     let canvasContainer = select('#canvas-container');
-    let cnvWidth = canvasContainer.width;
-    let cnvHeight = Math.floor(cnvWidth * (9 / 16));
-    canvasContainer.style('height', cnvHeight + 'px');
-    resizeCanvas(cnvWidth, cnvHeight);
-    // Optionally, re-distribute particles or re-initialize
-    // initializeParticles(); // This would reset positions, might be jarring
+    // Update base dimensions based on the container's current width (which might be responsive itself)
+    baseCnvWidth = canvasContainer.elt.getBoundingClientRect().width;
+    baseCnvHeight = Math.floor(baseCnvWidth * (9 / 16)); 
+    
+    // Now apply the current volume setting to these new base dimensions
+    updateVolume(); 
+    // No need to re-initialize particles, updateVolume handles position scaling.
 }
