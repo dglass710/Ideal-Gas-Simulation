@@ -119,6 +119,16 @@ canvas {
     font-weight: bold;
 }
 
+.tooltip-text {
+    cursor: help !important;
+    color: #f0a500;
+    text-decoration: none !important;
+}
+
+.tooltip-text:hover {
+    text-decoration: underline dotted !important;
+}
+
 .button-style {
     background-color: #f0a500;
     color: #1a1a2e;
@@ -142,4 +152,9 @@ canvas {
 .button-style:active {
     background-color: #d99400;
     transform: scale(0.98);
+}
+
+#info-display span[title] {
+    cursor: help;
+    text-decoration: underline dotted;
 }

@@ -13,7 +13,7 @@ An interactive web application that simulates particles in an ideal gas within a
 - **Advanced Physics**:
   - Realistic particle-wall collisions with configurable damping
   - Elastic particle-particle collisions
-  - Pressure calculation and display (collisions per minute)
+  - Pressure calculation and display (based on momentum transfer)
 - **Interactive Controls**:
   - Pause/Resume simulation
   - Reset to default values
@@ -48,7 +48,10 @@ No special build steps are required as it's a client-side application using CDN 
 
 ## Physics Notes
 
-- **Pressure** is calculated as the number of wall collisions per minute
+- **Pressure**: The displayed pressure, labeled "(Force/Perimeter)" in the UI, represents the scaled average force exerted by particles per unit length of the container walls.
+  - This is calculated by summing the momentum transferred to the walls by all particle collisions over a one-second interval. The momentum transfer for a single collision considers particle mass, impact velocity, and the `DAMPING_FACTOR`.
+  - This total momentum change per second (which is the average force) is then divided by the container's perimeter.
+  - The resulting value is then multiplied by a `PRESSURE_SCALING_FACTOR` (currently 10) for display purposes.
 - **Temperature** directly affects the average kinetic energy of particles
 - **Volume** changes affect pressure according to Boyle's Law (inverse relationship)
 - **Damping** simulates energy loss in real systems (friction, heat, etc.)
