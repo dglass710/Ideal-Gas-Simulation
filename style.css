@@ -105,6 +105,20 @@ canvas {
     max-height: 100%;
 }
 
+#info-display {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #1e1e2f;
+    border-radius: 8px;
+    font-size: 1em;
+    color: #c0c0c0;
+}
+
+#info-display span {
+    color: #f0a500;
+    font-weight: bold;
+}
+
 .button-style {
     background-color: #f0a500;
     color: #1a1a2e;

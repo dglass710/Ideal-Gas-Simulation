@@ -12,6 +12,9 @@
     <div class="container">
         <h1>Ideal Gas Simulation</h1>
         <div id="canvas-container"></div>
+        <div id="info-display">
+            Pressure (Collisions/min): <span id="pressureVal">0</span>
+        </div>
         <div class="controls">
             <div class="slider-group">
                 <label for="numParticles">Number of Particles: <span id="numParticlesVal">100</span></label>
@@ -25,7 +28,16 @@
                 <label for="volume">Volume: <span id="volumeVal">100</span>%</label>
                 <input type="range" id="volume" min="50" max="150" value="100" step="1" class="slider">
             </div>
+            <div class="slider-group">
+                <label for="minParticleRadius">Min Particle Radius: <span id="minParticleRadiusVal">4</span> px</label>
+                <input type="range" id="minParticleRadius" min="1" max="10" value="4" step="1" class="slider">
+            </div>
+            <div class="slider-group">
+                <label for="maxParticleRadius">Max Particle Radius: <span id="maxParticleRadiusVal">7</span> px</label>
+                <input type="range" id="maxParticleRadius" min="1" max="20" value="7" step="1" class="slider">
+            </div>
             <button id="resetButton" class="button-style">Reset Simulation</button>
+            <button id="pausePlayButton" class="button-style">Pause</button>
         </div>
     </div>
     <script src="sketch.js"></script>
