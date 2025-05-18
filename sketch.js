@@ -20,7 +20,7 @@ let displayedPressure = 0;
 // Colors for speed indication
 let slowColor, fastColor;
 
-const DEBUG_MODE = true; // Toggle console logs
+const DEBUG_MODE = false; // Toggle console logs - set to false to disable debug logging
 
 // Default values for reset
 const DEFAULT_NUM_PARTICLES = 100;
@@ -151,13 +151,8 @@ class Particle {
         } else {
             fill(particleColor);
         }
-        if (DEBUG_MODE && frameCount % 60 === 0) { // Log once per second for a particle
-            if (particles.indexOf(this) === 0) { // Log only for the first particle to avoid spam
-                 console.log(`Particle.display: x=${this.pos.x.toFixed(2)}, y=${this.pos.y.toFixed(2)}, r=${this.radius.toFixed(2)}, color=${particleColor}`);
-                 if (isNaN(this.pos.x) || isNaN(this.pos.y) || isNaN(this.radius)) {
-                    console.error("Particle.display called with NaN values!");
-                 }
-            }
+        if (DEBUG_MODE && (isNaN(this.pos.x) || isNaN(this.pos.y) || isNaN(this.radius))) {
+            console.error("Particle.display called with NaN values!", this);
         }
         ellipse(this.pos.x, this.pos.y, this.radius * 2);
     }
@@ -307,7 +302,10 @@ function roundPressureForDisplay(value) {
 }
 
 function draw() {
-    if (DEBUG_MODE && frameCount % 120 === 0 && !isPaused) console.log(`Draw loop running, frame: ${frameCount}, Paused: ${isPaused}, Temp: ${temperatureSlider.value()}, Particles: ${particles.length}, p5_width: ${width}, p5_height: ${height}`);
+    // Debug logging - only log every 10 seconds when DEBUG_MODE is true
+    if (DEBUG_MODE && frameCount % 600 === 0 && !isPaused) {
+        console.log(`Simulation status - Frame: ${frameCount}, Temp: ${temperatureSlider.value()}K, Particles: ${particles.length}`);
+    }
     if (isPaused) {
         background(30, 30, 47); // Clear background even when paused for visual clarity
         displayParticles();     // Draw current particle positions
