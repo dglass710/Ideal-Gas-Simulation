@@ -15,7 +15,7 @@
         <div class="controls">
             <div class="slider-group">
                 <label for="numParticles">Number of Particles: <span id="numParticlesVal">100</span></label>
-                <input type="range" id="numParticles" min="10" max="300" value="100" class="slider">
+                <input type="range" id="numParticles" min="0" max="300" value="100" class="slider">
             </div>
             <div class="slider-group">
                 <label for="temperature">Temperature (Kelvin): <span id="temperatureVal">298</span>K</label>
@@ -25,6 +25,7 @@
                 <label for="volume">Volume: <span id="volumeVal">100</span>%</label>
                 <input type="range" id="volume" min="50" max="150" value="100" step="1" class="slider">
             </div>
+            <button id="resetButton" class="button-style">Reset Simulation</button>
         </div>
     </div>
     <script src="sketch.js"></script>

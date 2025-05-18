@@ -8,6 +8,11 @@ const K_TEMP_SCALAR = 0.05; // Scales Kelvin to a reasonable base speed
 
 let baseCnvWidth, baseCnvHeight; // Initial canvas dimensions for volume scaling
 
+// Default values for reset
+const DEFAULT_NUM_PARTICLES = 100;
+const DEFAULT_TEMPERATURE_K = 298;
+const DEFAULT_VOLUME_PERCENT = 100;
+
 class Particle {
     constructor(x, y, baseSpeed) {
         this.pos = createVector(x, y);
@@ -131,6 +136,9 @@ function setup() {
     temperatureSlider.input(updateTemperatureDisplay);
     volumeSlider.input(updateVolume);
 
+    let resetButton = select('#resetButton');
+    resetButton.mousePressed(resetSimulation);
+
     // Initial setup for canvas size based on volume slider
     updateVolume(); 
     initializeParticles();
@@ -231,4 +239,20 @@ function windowResized() {
     // Now apply the current volume setting to these new base dimensions
     updateVolume(); 
     // No need to re-initialize particles, updateVolume handles position scaling.
+}
+
+function resetSimulation() {
+    // Set sliders to default values
+    numParticlesSlider.value(DEFAULT_NUM_PARTICLES);
+    temperatureSlider.value(DEFAULT_TEMPERATURE_K);
+    volumeSlider.value(DEFAULT_VOLUME_PERCENT);
+
+    // Update display spans
+    numParticlesValSpan.html(DEFAULT_NUM_PARTICLES);
+    temperatureValSpan.html(DEFAULT_TEMPERATURE_K);
+    // volumeValSpan is updated by updateVolume()
+
+    // Apply changes
+    updateVolume();         // Resizes canvas to default volume and updates volume span
+    initializeParticles();  // Clears old particles, creates new ones with default settings
 }
